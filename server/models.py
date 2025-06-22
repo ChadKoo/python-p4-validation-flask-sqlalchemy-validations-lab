@@ -12,6 +12,37 @@ class Author(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
     # Add validators 
+    @validates('name')
+    def validate_name_length(self, key, value):
+        if not value:
+            raise ValueError("Name must be present")
+        
+        
+                     
+        existing_name= Author.query.filter(Author.name == value, Author.id != self.id).first()
+
+        if existing_name:
+            raise ValueError("Name has to be unique")
+    
+        
+        return value
+    
+    @validates('phone_number')
+    def validate_phone_length(self, key, value):
+        
+    # Check if phone number is provided
+        if not value:
+            raise ValueError("Phone number must be provided")
+        
+        if len(value) != 10:
+            raise ValueError("Phone length must be 10 characters")
+        
+        if not value.isdigit():
+            raise ValueError("Phone number must only contain digits")
+        
+        return value
+    
+  
 
     def __repr__(self):
         return f'Author(id={self.id}, name={self.name})'
@@ -27,7 +58,37 @@ class Post(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
-    # Add validators  
+    # Add validators
+    @validates('content')
+    def validate_content(self, key, value):
+        if len(value)<250:
+            raise ValueError("Failed simple email validation")
+        return value  
+    
+    @validates('summary')
+    def validate_summary(self, key, value):
+        if len(value)>250:
+            raise ValueError("Failed simple email validation")
+        return value
+    
+    @validates('title')
+    def validate_title(self, key, value):
+        if not value:
+            raise ValueError("Title must be present")
+        
+        clickbait_phrases =  ["Won't Believe", "Secret", "Top", "Guess"]
+
+        if not any(phrase in value for phrase in clickbait_phrases):
+            raise ValueError("Title not sufficiently clickbait-y")
+        
+        return value
+    
+    @validates('category')
+    def validate_category(self, key, value):
+        if value not in ['Fiction', 'Non-Fiction']:
+            raise ValueError("Category must be fiction or non-fiction")
+        return value
+   
 
 
     def __repr__(self):
